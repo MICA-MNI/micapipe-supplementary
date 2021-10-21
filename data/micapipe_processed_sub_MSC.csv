@@ -1,0 +1,91 @@
+Subject, Session, Module, Status, Progress, User, Workstation, Date, Processing.time, Processing, Version
+MSC02, struct01, proc_freesurfer, COMPLETED, 01/01, rcruces, cassio.bic.mni.mcgill.ca, Thu Apr 15 14:51:24 EDT 2021, 769.800, qsub-MICA, v0.0.2 'wobbly'
+MSC01, struct02, proc_freesurfer, COMPLETED, 01/01, rcruces, paris.bic.mni.mcgill.ca, Thu Apr 15 15:32:46 EDT 2021, 811.167, qsub-MICA, v0.0.2 'wobbly'
+MSC02, struct02, proc_freesurfer, COMPLETED, 01/01, rcruces, paris.bic.mni.mcgill.ca, Thu Apr 15 15:52:07 EDT 2021, 754.933, qsub-MICA, v0.0.2 'wobbly'
+MSC04, struct01, proc_freesurfer, COMPLETED, 01/01, rcruces, cassio.bic.mni.mcgill.ca, Thu Apr 15 18:08:34 EDT 2021, 703.100, qsub-MICA, v0.0.2 'wobbly'
+MSC03, struct01, proc_freesurfer, COMPLETED, 01/01, rcruces, valentine.bic.mni.mcgill.ca, Thu Apr 15 18:31:15 EDT 2021, 765.733, qsub-MICA, v0.0.2 'wobbly'
+MSC04, struct02, proc_freesurfer, COMPLETED, 01/01, rcruces, venice.bic.mni.mcgill.ca, Thu Apr 15 18:32:07 EDT 2021, 650.617, qsub-MICA, v0.0.2 'wobbly'
+MSC03, struct02, proc_freesurfer, COMPLETED, 01/01, rcruces, oncilla.bic.mni.mcgill.ca, Thu Apr 15 18:46:32 EDT 2021, 741.017, qsub-MICA, v0.0.2 'wobbly'
+MSC05, struct01, proc_freesurfer, COMPLETED, 01/01, rcruces, emilia.bic.mni.mcgill.ca, Fri Apr 16 00:40:26 EDT 2021, 870.717, qsub-MICA, v0.0.2 'wobbly'
+MSC07, struct01, proc_freesurfer, COMPLETED, 01/01, rcruces, paris.bic.mni.mcgill.ca, Fri Apr 16 04:55:25 EDT 2021, 767.883, qsub-MICA, v0.0.2 'wobbly'
+MSC05, struct02, proc_freesurfer, COMPLETED, 01/01, rcruces, cassio.bic.mni.mcgill.ca, Fri Apr 16 05:25:26 EDT 2021, 832.500, qsub-MICA, v0.0.2 'wobbly'
+MSC06, struct02, proc_freesurfer, COMPLETED, 01/01, rcruces, cassio.bic.mni.mcgill.ca, Fri Apr 16 05:34:36 EDT 2021, 822.383, qsub-MICA, v0.0.2 'wobbly'
+MSC07, struct02, proc_freesurfer, COMPLETED, 01/01, rcruces, oncilla.bic.mni.mcgill.ca, Fri Apr 16 06:30:56 EDT 2021, 799.217, qsub-MICA, v0.0.2 'wobbly'
+MSC06, struct01, proc_freesurfer, COMPLETED, 01/01, rcruces, oncilla.bic.mni.mcgill.ca, Fri Apr 16 06:46:50 EDT 2021, 894.650, qsub-MICA, v0.0.2 'wobbly'
+MSC08, struct01, proc_freesurfer, COMPLETED, 01/01, rcruces, paris.bic.mni.mcgill.ca, Fri Apr 16 08:09:12 EDT 2021, 840.483, qsub-MICA, v0.0.2 'wobbly'
+MSC08, struct02, proc_freesurfer, COMPLETED, 01/01, rcruces, paris.bic.mni.mcgill.ca, Fri Apr 16 09:05:48 EDT 2021, 877.833, qsub-MICA, v0.0.2 'wobbly'
+MSC09, struct01, proc_freesurfer, COMPLETED, 01/01, rcruces, cassio.bic.mni.mcgill.ca, Fri Apr 16 10:43:15 EDT 2021, 971.033, qsub-MICA, v0.0.2 'wobbly'
+MSC09, struct02, proc_freesurfer, COMPLETED, 01/01, rcruces, venice.bic.mni.mcgill.ca, Fri Apr 16 12:06:06 EDT 2021, 987.683, qsub-MICA, v0.0.2 'wobbly'
+MSC01, struct02, proc_structural, COMPLETED, 07/07, rcruces, yeatman.bic.mni.mcgill.ca, Wed May 12 12:37:12 EDT 2021, 75.400, LOCAL-MICA, v0.0.2 'wobbly'
+MSC02, struct01, proc_structural, COMPLETED, 07/07, rcruces, yeatman.bic.mni.mcgill.ca, Wed May 12 12:37:24 EDT 2021, 72.667, LOCAL-MICA, v0.0.2 'wobbly'
+MSC02, struct02, proc_structural, COMPLETED, 07/07, rcruces, yeatman.bic.mni.mcgill.ca, Wed May 12 12:37:38 EDT 2021, 75.783, LOCAL-MICA, v0.0.2 'wobbly'
+MSC03, struct01, proc_structural, COMPLETED, 07/07, rcruces, yeatman.bic.mni.mcgill.ca, Wed May 12 12:37:53 EDT 2021, 74.333, LOCAL-MICA, v0.0.2 'wobbly'
+MSC03, struct02, proc_structural, COMPLETED, 07/07, rcruces, yeatman.bic.mni.mcgill.ca, Wed May 12 12:38:05 EDT 2021, 74.367, LOCAL-MICA, v0.0.2 'wobbly'
+MSC04, struct01, proc_structural, COMPLETED, 07/07, rcruces, yeatman.bic.mni.mcgill.ca, Wed May 12 12:38:18 EDT 2021, 75.733, LOCAL-MICA, v0.0.2 'wobbly'
+MSC04, struct02, proc_structural, COMPLETED, 07/07, rcruces, yeatman.bic.mni.mcgill.ca, Wed May 12 12:38:30 EDT 2021, 72.967, LOCAL-MICA, v0.0.2 'wobbly'
+MSC05, struct01, proc_structural, COMPLETED, 07/07, rcruces, yeatman.bic.mni.mcgill.ca, Wed May 12 12:38:45 EDT 2021, 75.950, LOCAL-MICA, v0.0.2 'wobbly'
+MSC05, struct02, proc_structural, COMPLETED, 07/07, rcruces, yeatman.bic.mni.mcgill.ca, Wed May 12 12:38:57 EDT 2021, 75.567, LOCAL-MICA, v0.0.2 'wobbly'
+MSC06, struct01, proc_structural, COMPLETED, 07/07, rcruces, yeatman.bic.mni.mcgill.ca, Wed May 12 12:39:11 EDT 2021, 79.267, LOCAL-MICA, v0.0.2 'wobbly'
+MSC06, struct02, proc_structural, COMPLETED, 07/07, rcruces, yeatman.bic.mni.mcgill.ca, Wed May 12 12:39:24 EDT 2021, 76.267, LOCAL-MICA, v0.0.2 'wobbly'
+MSC07, struct01, proc_structural, COMPLETED, 07/07, rcruces, yeatman.bic.mni.mcgill.ca, Wed May 12 12:39:37 EDT 2021, 80.683, LOCAL-MICA, v0.0.2 'wobbly'
+MSC07, struct02, proc_structural, COMPLETED, 07/07, rcruces, yeatman.bic.mni.mcgill.ca, Wed May 12 12:39:49 EDT 2021, 74.100, LOCAL-MICA, v0.0.2 'wobbly'
+MSC08, struct01, proc_structural, COMPLETED, 07/07, rcruces, yeatman.bic.mni.mcgill.ca, Wed May 12 12:40:02 EDT 2021, 74.650, LOCAL-MICA, v0.0.2 'wobbly'
+MSC08, struct02, proc_structural, COMPLETED, 07/07, rcruces, yeatman.bic.mni.mcgill.ca, Wed May 12 12:40:15 EDT 2021, 74.733, LOCAL-MICA, v0.0.2 'wobbly'
+MSC09, struct01, proc_structural, COMPLETED, 07/07, rcruces, yeatman.bic.mni.mcgill.ca, Wed May 12 12:40:28 EDT 2021, 78.033, LOCAL-MICA, v0.0.2 'wobbly'
+MSC09, struct02, proc_structural, COMPLETED, 07/07, rcruces, yeatman.bic.mni.mcgill.ca, Wed May 12 12:40:41 EDT 2021, 78.533, LOCAL-MICA, v0.0.2 'wobbly'
+MSC03, struct02, post_structural, COMPLETED, 25/25, rcruces, node31.bic.mni.mcgill.ca, Wed May 12 15:23:50 EDT 2021, 111.617, qsub-all.q, v0.0.2 'wobbly'
+MSC02, struct02, post_structural, COMPLETED, 25/25, rcruces, node30, Wed May 12 15:31:17 EDT 2021, 120.117, qsub-all.q, v0.0.2 'wobbly'
+MSC03, struct01, post_structural, COMPLETED, 25/25, rcruces, node28, Wed May 12 15:34:48 EDT 2021, 122.833, qsub-all.q, v0.0.2 'wobbly'
+MSC01, struct02, post_structural, COMPLETED, 25/25, rcruces, node32, Wed May 12 15:35:41 EDT 2021, 128.933, qsub-all.q, v0.0.2 'wobbly'
+MSC02, struct01, post_structural, COMPLETED, 25/25, rcruces, node33.bic.mni.mcgill.ca, Wed May 12 15:59:12 EDT 2021, 151.733, qsub-all.q, v0.0.2 'wobbly'
+MSC04, struct01, post_structural, COMPLETED, 25/25, rcruces, node32, Wed May 12 17:56:48 EDT 2021, 117.283, qsub-all.q, v0.0.2 'wobbly'
+MSC05, struct01, post_structural, COMPLETED, 25/25, rcruces, node28, Wed May 12 18:34:52 EDT 2021, 137.367, qsub-all.q, v0.0.2 'wobbly'
+MSC04, struct02, post_structural, COMPLETED, 25/25, rcruces, node33.bic.mni.mcgill.ca, Wed May 12 18:40:01 EDT 2021, 147.783, qsub-all.q, v0.0.2 'wobbly'
+MSC05, struct02, post_structural, COMPLETED, 25/25, rcruces, node30, Wed May 12 19:32:11 EDT 2021, 130.067, qsub-all.q, v0.0.2 'wobbly'
+MSC06, struct02, post_structural, COMPLETED, 25/25, rcruces, node27.bic.mni.mcgill.ca, Wed May 12 19:45:41 EDT 2021, 126.683, qsub-all.q, v0.0.2 'wobbly'
+MSC06, struct01, post_structural, COMPLETED, 25/25, rcruces, node29, Wed May 12 19:45:49 EDT 2021, 141.333, qsub-all.q, v0.0.2 'wobbly'
+MSC07, struct01, post_structural, COMPLETED, 25/25, rcruces, node31.bic.mni.mcgill.ca, Wed May 12 19:48:46 EDT 2021, 111.783, qsub-all.q, v0.0.2 'wobbly'
+MSC07, struct02, post_structural, COMPLETED, 25/25, rcruces, node32, Wed May 12 20:29:58 EDT 2021, 123.683, qsub-all.q, v0.0.2 'wobbly'
+MSC08, struct02, post_structural, COMPLETED, 25/25, rcruces, node28, Wed May 12 20:54:21 EDT 2021, 135.117, qsub-all.q, v0.0.2 'wobbly'
+MSC09, struct01, post_structural, COMPLETED, 25/25, rcruces, node25.bic.mni.mcgill.ca, Wed May 12 20:57:05 EDT 2021, 136.850, qsub-all.q, v0.0.2 'wobbly'
+MSC08, struct01, post_structural, COMPLETED, 25/25, rcruces, node35, Wed May 12 21:16:25 EDT 2021, 161.383, qsub-all.q, v0.0.2 'wobbly'
+MSC09, struct02, post_structural, COMPLETED, 25/25, rcruces, node33.bic.mni.mcgill.ca, Wed May 12 22:36:33 EDT 2021, 193.650, qsub-all.q, v0.0.2 'wobbly'
+MSC02, struct01, proc_rsfmri, INCOMPLETE, 19/21, rcruces, yeatman.bic.mni.mcgill.ca, Tue May 18 06:16:35 EDT 2021, 225.317, LOCAL, v0.0.2 'wobbly'
+MSC02, func01, proc_rsfmri, COMPLETED, 21/21, rcruces, yeatman.bic.mni.mcgill.ca, Thu May 20 12:17:06 EDT 2021, 101.217, LOCAL, v0.0.2 'wobbly'
+MSC05, struct01, Morphology, COMPLETED, 08/08, rcruces, cassio.bic.mni.mcgill.ca, Thu May 27 15:19:01 EDT 2021, 0.967, qsub-MICA, v0.0.2 'wobbly'
+MSC03, struct02, Morphology, COMPLETED, 08/08, rcruces, montano.bic.mni.mcgill.ca, Thu May 27 15:21:08 EDT 2021, 0.867, qsub-MICA, v0.0.2 'wobbly'
+MSC02, struct01, Morphology, COMPLETED, 08/08, rcruces, paris.bic.mni.mcgill.ca, Thu May 27 15:19:01 EDT 2021, 0.883, qsub-MICA, v0.0.2 'wobbly'
+MSC02, struct02, Morphology, COMPLETED, 08/08, rcruces, varrius.bic.mni.mcgill.ca, Thu May 27 15:19:02 EDT 2021, 0.883, qsub-MICA, v0.0.2 'wobbly'
+MSC07, struct01, Morphology, COMPLETED, 08/08, rcruces, valentine.bic.mni.mcgill.ca, Thu May 27 15:19:28 EDT 2021, 0.667, qsub-MICA, v0.0.2 'wobbly'
+MSC08, struct01, Morphology, COMPLETED, 08/08, rcruces, valentine.bic.mni.mcgill.ca, Thu May 27 15:19:44 EDT 2021, 0.700, qsub-MICA, v0.0.2 'wobbly'
+MSC07, struct02, Morphology, COMPLETED, 08/08, rcruces, oncilla.bic.mni.mcgill.ca, Thu May 27 15:19:49 EDT 2021, 0.783, qsub-MICA, v0.0.2 'wobbly'
+MSC09, struct01, Morphology, COMPLETED, 08/08, rcruces, varrius.bic.mni.mcgill.ca, Thu May 27 15:20:11 EDT 2021, 0.883, qsub-MICA, v0.0.2 'wobbly'
+MSC08, struct02, Morphology, COMPLETED, 08/08, rcruces, montano.bic.mni.mcgill.ca, Thu May 27 15:22:18 EDT 2021, 0.900, qsub-MICA, v0.0.2 'wobbly'
+MSC09, struct02, Morphology, COMPLETED, 08/08, rcruces, cassio.bic.mni.mcgill.ca, Thu May 27 15:20:12 EDT 2021, 0.917, qsub-MICA, v0.0.2 'wobbly'
+MSC07, struct01, GD, COMPLETED, 18/18, rcruces, percy.bic.mni.mcgill.ca, Thu May 27 17:35:26 EDT 2021, 136.650, qsub-MICA
+MSC03, struct01, GD, COMPLETED, 18/18, rcruces, venice.bic.mni.mcgill.ca, Thu May 27 17:39:18 EDT 2021, 141.250, qsub-MICA
+MSC08, struct01, GD, COMPLETED, 18/18, rcruces, percy.bic.mni.mcgill.ca, Thu May 27 17:43:09 EDT 2021, 144.117, qsub-MICA
+MSC04, struct02, GD, COMPLETED, 18/18, rcruces, varrius.bic.mni.mcgill.ca, Thu May 27 17:48:26 EDT 2021, 150.267, qsub-MICA
+MSC01, struct02, GD, COMPLETED, 18/18, rcruces, percy.bic.mni.mcgill.ca, Thu May 27 17:48:39 EDT 2021, 150.800, qsub-MICA
+MSC04, struct01, GD, COMPLETED, 18/18, rcruces, paris.bic.mni.mcgill.ca, Thu May 27 17:51:14 EDT 2021, 153.083, qsub-MICA
+MSC05, struct01, GD, COMPLETED, 18/18, rcruces, percy.bic.mni.mcgill.ca, Thu May 27 17:54:27 EDT 2021, 156.400, qsub-MICA
+MSC03, struct02, GD, COMPLETED, 18/18, rcruces, fladgate.bic.mni.mcgill.ca, Thu May 27 17:58:46 EDT 2021, 160.733, qsub-MICA
+MSC09, struct02, GD, COMPLETED, 18/18, rcruces, valentine.bic.mni.mcgill.ca, Thu May 27 18:04:12 EDT 2021, 164.683, qsub-MICA
+MSC02, struct02, GD, COMPLETED, 18/18, rcruces, emilia.bic.mni.mcgill.ca, Thu May 27 18:04:14 EDT 2021, 166.183, qsub-MICA
+MSC02, struct01, GD, COMPLETED, 18/18, rcruces, oncilla.bic.mni.mcgill.ca, Thu May 27 18:06:00 EDT 2021, 167.867, qsub-MICA
+MSC06, struct02, GD, COMPLETED, 18/18, rcruces, yeatman.bic.mni.mcgill.ca, Thu May 27 18:07:14 EDT 2021, 169.117, qsub-MICA
+MSC07, struct02, GD, COMPLETED, 18/18, rcruces, cassio.bic.mni.mcgill.ca, Thu May 27 18:08:56 EDT 2021, 169.900, qsub-MICA
+MSC08, struct02, GD, COMPLETED, 18/18, rcruces, paris.bic.mni.mcgill.ca, Thu May 27 18:13:51 EDT 2021, 174.567, qsub-MICA
+MSC06, struct01, GD, COMPLETED, 18/18, rcruces, cassio.bic.mni.mcgill.ca, Thu May 27 18:20:06 EDT 2021, 182.050, qsub-MICA
+MSC05, struct02, GD, COMPLETED, 18/18, rcruces, yeatman.bic.mni.mcgill.ca, Thu May 27 18:21:23 EDT 2021, 183.267, qsub-MICA
+MSC09, struct01, GD, COMPLETED, 18/18, rcruces, fladgate.bic.mni.mcgill.ca, Thu May 27 18:26:47 EDT 2021, 187.500, qsub-MICA
+MSC02, func01, proc_rsfmri, COMPLETED, 21/21, rcruces, node32, Thu Jul  1 21:02:49 EDT 2021, 0.133, qsub-all.q, v1.0.0 'Roadrunner'
+MSC02, func03, proc_rsfmri, COMPLETED, 21/21, rcruces, node22.bic.mni.mcgill.ca, Thu Jul  1 21:55:47 EDT 2021, 51.617, qsub-all.q, v1.0.0 'Roadrunner'
+MSC02, func04, proc_rsfmri, COMPLETED, 21/21, rcruces, node24.bic.mni.mcgill.ca, Thu Jul  1 21:56:34 EDT 2021, 51.650, qsub-all.q, v1.0.0 'Roadrunner'
+MSC02, func05, proc_rsfmri, COMPLETED, 21/21, rcruces, node27.bic.mni.mcgill.ca, Thu Jul  1 21:58:06 EDT 2021, 49.933, qsub-all.q, v1.0.0 'Roadrunner'
+MSC02, func06, proc_rsfmri, COMPLETED, 21/21, rcruces, node25.bic.mni.mcgill.ca, Thu Jul  1 22:00:33 EDT 2021, 50.567, qsub-all.q, v1.0.0 'Roadrunner'
+MSC02, func07, proc_rsfmri, COMPLETED, 21/21, rcruces, node22.bic.mni.mcgill.ca, Thu Jul  1 22:05:47 EDT 2021, 50.383, qsub-all.q, v1.0.0 'Roadrunner'
+MSC02, func09, proc_rsfmri, COMPLETED, 21/21, rcruces, node31.bic.mni.mcgill.ca, Thu Jul  1 22:07:14 EDT 2021, 50.567, qsub-all.q, v1.0.0 'Roadrunner'
+MSC02, func08, proc_rsfmri, COMPLETED, 21/21, rcruces, node28, Thu Jul  1 22:15:41 EDT 2021, 59.767, qsub-all.q, v1.0.0 'Roadrunner'
+MSC02, func10, proc_rsfmri, COMPLETED, 21/21, rcruces, node30, Thu Jul  1 22:19:20 EDT 2021, 59.350, qsub-all.q, v1.0.0 'Roadrunner'
+MSC02, func02, proc_rsfmri, COMPLETED, 21/21, rcruces, node32, Thu Jul  1 23:03:47 EDT 2021, 120.850, qsub-all.q, v1.0.0 'Roadrunner'
