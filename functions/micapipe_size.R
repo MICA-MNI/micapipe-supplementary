@@ -22,7 +22,7 @@ setwd("/Users/rcruces/git_here/micapipe-supplementary/")
 # Helper functions
 csv_2_tbl <- function(csv) {
   # Load the data
-  data <- read.csv(paste0("data/", csv))
+  data <- read.csv(paste0("data/", csv), as.is = TRUE)
   
   # Split path into variables
   data$id <- sapply(strsplit(as.character(data$path), split='/', fixed=TRUE), function(x) (x[1]))
@@ -63,7 +63,7 @@ csv_2_tbl <- function(csv) {
   )
   
   # Kilobytes to Megabytes
-  Ndata$Kb <- round(Ndata$bits/1024,0)
+  Ndata$Kb <- round(as.numeric(as.character(Ndata$bits))/1024,0)
   
   # Plot the table
   nom <- gsub("micapipe_size_", "", gsub(".csv", "", csv))
