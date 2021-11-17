@@ -1,5 +1,6 @@
 # micapipe-supplementary
 
+Code used to generate figures 3 and 4 of the paper "Micapipe: a standardized processing pipeline for multiscale imaging, from connectomes to gradients"
 
 |               Script               |                                                                                                                                                     Description                                                                                                                                                     |
 |:----------------------------------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
