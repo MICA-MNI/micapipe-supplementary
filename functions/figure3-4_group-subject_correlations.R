@@ -11,6 +11,7 @@ require("RColorBrewer")
 require("viridis")
 library("igraph")
 library("tidyverse")
+library("gridExtra")   # Array for ggplots, equivalent of par(mfrow) 
 
 # --------------------------------------------------------------------------------- #
 #### Definen functions ####
@@ -103,7 +104,8 @@ proportional.thr <- function(M, thr=0.8) {
 # --------------------------------------------------------------------------------- #
 #### Group - subject correlations ####
 # Set the working directory to your subjec's directory
-setwd("/Users/rcruces/tmp/micaConn/")
+P <- "/Users/rcruces/tmp/micaConn/"
+setwd(P)
 
 # List the datasets
 datasets <- c('MICS', 'CamCAN', 'EpiC', 'EpiC2', 'audiopath', 'sudmex', 'MSC')
@@ -119,15 +121,14 @@ for (dataset in datasets){
   for (mod in modalities) {
     
     # list files
-    Files <- list.files(path = paste0("/Users/rcruces/tmp/micaConn/", mod, '/', dataset), pattern = ".txt")
+    Files <- list.files(path = paste0(P, mod, '/', dataset), pattern = ".txt")
     
     # Only runs if connectomes are found
     if (length(Files)!=0) {
       print(paste('[INFO].... RUNNING dataset', dataset,mod))
       
-      # for each parcelation
-      # parcs <- c('100', '400', '1000')
-      parcs <- c('100', '400')
+      # for each parcellation
+      parcs <- c('100', '400', '1000')
       
       for (parc in parcs) {
         # load each parcellation into a separate array
@@ -261,4 +262,72 @@ for (dataset in datasets){
   write.csv(corr, file=paste0(dataset, "_correlations.csv"), row.names = FALSE)
   write.csv(means, file=paste0(dataset, "_node-means.csv"), row.names = FALSE)
 }
+
+# ------------------------------------------------------------------------------- #
+#### Boxplot of the subject-group correspondance ####
+data.corr <- read.csv("MICS_correlations.csv")
+data.corr$granularity <- as.factor(data.corr$granularity)
+
+for (mod in modalities) {
+  # filter data by modality
+  Data <- data.corr %>%
+    filter(modality==mod)
+  lim <- 0.85
+  
+  # plot and save the data
+  svg(filename=paste0(dataset,'-',mod,"_SubjectGroup-rho.svg"), width=13 , height=3 , pointsize=300, bg='transparent')
+  g=grid.arrange(
+    # Edges
+    ggplot(Data, aes(x=granularity, y=edges)) + 
+      geom_boxplot(fill="gray75", size = 0.35, outlier.shape = NA, alpha=1, colour='gray10') + 
+      xlab("Granularity") +
+      ylim(lim, 1) +
+      ggtitle(paste0(dataset, '-', mod, ': ', 'Edges') ) +
+      theme(plot.title = element_text(hjust = 0.5)) +
+      geom_jitter(width = 0.15, size = 1, colour='gray10', alpha=0.6) +
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+            panel.background = element_blank(), axis.line = element_line(colour = "black")),
+    
+    # strength
+    ggplot(Data, aes(x=granularity, y=strength)) + 
+      geom_boxplot(fill="gray75", size = 0.35, outlier.shape = NA, alpha=1, colour='gray10') + 
+      xlab("Granularity") +
+      ylim(lim, 1) +
+      ggtitle('Strength') +
+      theme(plot.title = element_text(hjust = 0.5)) +
+      geom_jitter(width = 0.15, size = 1, colour='gray10', alpha=0.6) +
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+            panel.background = element_blank(), axis.line = element_line(colour = "black")),
+    
+    # Charasteristic path length
+    ggplot(Data, aes(x=granularity, y=path)) + 
+      geom_boxplot(fill="gray75", size = 0.35, outlier.shape = NA, alpha=1, colour='gray10') + 
+      xlab("Granularity") +
+      ylim(lim, 1) +
+      ggtitle('Char path length') +
+      theme(plot.title = element_text(hjust = 0.5)) +
+      geom_jitter(width = 0.15, size = 1, colour='gray10', alpha=0.6) +
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+            panel.background = element_blank(), axis.line = element_line(colour = "black")),
+    
+    # Weighted Cluster coefficient
+    ggplot(Data, aes(x=granularity, y=cluster)) + 
+      geom_boxplot(fill="gray75", size = 0.35, outlier.shape = NA, alpha=1, colour='gray10') + 
+      xlab("Granularity") +
+      ylim(lim, 1) +
+      ggtitle('Cluster coefficient') +
+      theme(plot.title = element_text(hjust = 0.5)) +
+      geom_jitter(width = 0.15, size = 1, colour='gray10', alpha=0.6) +
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+            panel.background = element_blank(), axis.line = element_line(colour = "black")),
+    ncol=4, nrow = 1
+  )
+  plot(g)
+  dev.off()
+}
+
+# ------------------------------------------------------------------------------- #
+#### Surface plot of the mean GTA ####
+data.mean <- read.csv("MICS_node-means.csv")
+
 
