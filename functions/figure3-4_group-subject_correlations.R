@@ -4,7 +4,7 @@
 # Subject-Group mean Correlation coefficients, edges, and graph theoretical analisys
 # R version 3.6.3
 #
-# Created by RRC on September 2021 (the second year of the pademic)
+# Created by RRC on December 2021 (the second year of the pademic)
 
 # Set the environment
 require("RColorBrewer")
@@ -12,13 +12,14 @@ require("viridis")
 library("igraph")
 library("tidyverse")
 library("gridExtra")   # Array for ggplots, equivalent of par(mfrow) 
+library("corrplot")
 
 # --------------------------------------------------------------------------------- #
 #### Definen functions ####
 # Strenght
 strenght_wu <- function(M){
   S <- apply(M,2,sum)
-  return(S)
+  return(S)c
 }
 
 # Weighted charachteristical path length
@@ -38,25 +39,6 @@ cc_wu <- function(M){
   Mnet <- graph_from_adjacency_matrix( M ,mode="undirected",weighted = TRUE,diag = FALSE) 
   CCw <- transitivity(Mnet,type="weighted",weights=E(Mnet)$weight)
   return(CCw)
-}
-
-#----------------------------------------------------------#
-# Coeficiente de Clustering - BINARY UNDIRECTED
-clustering_coef_bu <- function(A){
-  A[A > 0] = 1 # Make sure is a binary matrix
-  n <- dim(A)[1]
-  C <- rep(0,n) # QUe hacer en caso de que no tenga CC?
-  
-  for (u in 1:n) {
-    Ver <- which(A[u,]!=0)
-    k <- length(Ver)
-    # degree must be at least 2
-    if (k >= 2) {
-      S <- A[Ver,Ver]
-      C[u] = sum(S[,])/(k^2-k)
-    }                 
-  }
-  return(C)
 }
 
 fisher <- function(rho) {
@@ -113,19 +95,18 @@ modalities <- c('GD', 'SC', 'FC', 'MPC')
 
 # For each dataset and modality
 for (dataset in datasets){
-  
   # Create empty variables for each dataset
   corr <- c()
   means <- c()
   
   for (mod in modalities) {
-    
+    start.time <- Sys.time()
     # list files
     Files <- list.files(path = paste0(P, mod, '/', dataset), pattern = ".txt")
     
     # Only runs if connectomes are found
     if (length(Files)!=0) {
-      print(paste('[INFO].... RUNNING dataset', dataset,mod))
+      print(paste('\n RUNNING dataset', dataset,mod))
       
       # for each parcellation
       parcs <- c('100', '400', '1000')
@@ -250,6 +231,11 @@ for (dataset in datasets){
         # Create a data.frame with the results
         corr <- rbind(corr, data.frame(granularity=rep(parc,N), modality=rep(mod,N), edges=Cor, strength=Scor, path=Lcor, cluster=Ccor))
         means <- rbind(means, data.frame(roi=1:n, granularity=rep(parc,n), modality=rep(mod,n), strength=Savg, path=Lavg, cluster=Cavg))
+        
+        # Computational Time
+        end.time <- Sys.time()
+        time.taken <- end.time - start.time
+        print(time.taken)
       }
       
     } else {
@@ -265,69 +251,152 @@ for (dataset in datasets){
 
 # ------------------------------------------------------------------------------- #
 #### Boxplot of the subject-group correspondance ####
-data.corr <- read.csv("MICS_correlations.csv")
-data.corr$granularity <- as.factor(data.corr$granularity)
-
-for (mod in modalities) {
-  # filter data by modality
-  Data <- data.corr %>%
-    filter(modality==mod)
-  lim <- 0.85
+datasets <- c('MICS', 'CamCAN', 'EpiC', 'EpiC2', 'audiopath', 'sudmex', 'MSC')
+for (dataset in datasets) {
+  data.corr <- c()
+  try(data.corr <- read.csv(paste0(dataset,"_correlations.csv")))
   
-  # plot and save the data
-  svg(filename=paste0(dataset,'-',mod,"_SubjectGroup-rho.svg"), width=13 , height=3 , pointsize=300, bg='transparent')
-  g=grid.arrange(
-    # Edges
-    ggplot(Data, aes(x=granularity, y=edges)) + 
-      geom_boxplot(fill="gray75", size = 0.35, outlier.shape = NA, alpha=1, colour='gray10') + 
-      xlab("Granularity") +
-      ylim(lim, 1) +
-      ggtitle(paste0(dataset, '-', mod, ': ', 'Edges') ) +
-      theme(plot.title = element_text(hjust = 0.5)) +
-      geom_jitter(width = 0.15, size = 1, colour='gray10', alpha=0.6) +
-      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-            panel.background = element_blank(), axis.line = element_line(colour = "black")),
+  if (!is.null(data.corr)) {
+    print(paste('[INFO].... plotting', dataset))
+    data.corr$granularity <- as.factor(data.corr$granularity)
     
-    # strength
-    ggplot(Data, aes(x=granularity, y=strength)) + 
-      geom_boxplot(fill="gray75", size = 0.35, outlier.shape = NA, alpha=1, colour='gray10') + 
-      xlab("Granularity") +
-      ylim(lim, 1) +
-      ggtitle('Strength') +
-      theme(plot.title = element_text(hjust = 0.5)) +
-      geom_jitter(width = 0.15, size = 1, colour='gray10', alpha=0.6) +
-      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-            panel.background = element_blank(), axis.line = element_line(colour = "black")),
+    for (mod in modalities) {
+      # filter data by modality
+      Data <- data.corr %>%
+        filter(modality==mod)
+      lim <- 0
+      
+      # plot and save the data
+      svg(filename=paste0(dataset,'-',mod,"_SubjectGroup-rho.svg"), width=13 , height=3 , pointsize=300, bg='transparent')
+      g=grid.arrange(
+        # Edges
+        ggplot(Data, aes(x=granularity, y=edges)) + 
+          geom_boxplot(fill="gray75", size = 0.35, outlier.shape = NA, alpha=1, colour='gray10') + 
+          xlab("Granularity") +
+          ylim(lim, 1) +
+          ggtitle(paste0(dataset, '-', mod, ': ', 'Edges') ) +
+          theme(plot.title = element_text(hjust = 0.5)) +
+          geom_jitter(width = 0.15, size = 1, colour='gray10', alpha=0.6) +
+          theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                panel.background = element_blank(), axis.line = element_line(colour = "black")),
+        
+        # strength
+        ggplot(Data, aes(x=granularity, y=strength)) + 
+          geom_boxplot(fill="gray75", size = 0.35, outlier.shape = NA, alpha=1, colour='gray10') + 
+          xlab("Granularity") +
+          ylim(lim, 1) +
+          ggtitle('Strength') +
+          theme(plot.title = element_text(hjust = 0.5)) +
+          geom_jitter(width = 0.15, size = 1, colour='gray10', alpha=0.6) +
+          theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                panel.background = element_blank(), axis.line = element_line(colour = "black")),
+        
+        # Charasteristic path length
+        ggplot(Data, aes(x=granularity, y=path)) + 
+          geom_boxplot(fill="gray75", size = 0.35, outlier.shape = NA, alpha=1, colour='gray10') + 
+          xlab("Granularity") +
+          ylim(lim, 1) +
+          ggtitle('Char path length') +
+          theme(plot.title = element_text(hjust = 0.5)) +
+          geom_jitter(width = 0.15, size = 1, colour='gray10', alpha=0.6) +
+          theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                panel.background = element_blank(), axis.line = element_line(colour = "black")),
+        
+        # Weighted Cluster coefficient
+        ggplot(Data, aes(x=granularity, y=cluster)) + 
+          geom_boxplot(fill="gray75", size = 0.35, outlier.shape = NA, alpha=1, colour='gray10') + 
+          xlab("Granularity") +
+          ylim(lim, 1) +
+          ggtitle('Cluster coefficient') +
+          theme(plot.title = element_text(hjust = 0.5)) +
+          geom_jitter(width = 0.15, size = 1, colour='gray10', alpha=0.6) +
+          theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                panel.background = element_blank(), axis.line = element_line(colour = "black")),
+        ncol=4, nrow = 1
+      )
+      plot(g)
+      dev.off()
+    }
     
-    # Charasteristic path length
-    ggplot(Data, aes(x=granularity, y=path)) + 
-      geom_boxplot(fill="gray75", size = 0.35, outlier.shape = NA, alpha=1, colour='gray10') + 
-      xlab("Granularity") +
-      ylim(lim, 1) +
-      ggtitle('Char path length') +
-      theme(plot.title = element_text(hjust = 0.5)) +
-      geom_jitter(width = 0.15, size = 1, colour='gray10', alpha=0.6) +
-      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-            panel.background = element_blank(), axis.line = element_line(colour = "black")),
+    # Long to wide format
+    data.corr.wide <- data.corr[data.corr$granularity==100,]
+    for (i in c(400, 1000)) { data.corr.wide <- cbind(data.corr.wide, data.corr[data.corr$granularity==i,3:6]) }
+    colnames(data.corr.wide)[3:14] <- paste0(rep(colnames(data.corr.wide)[3:6],3), rep(c('.100','.400','.1000'), each=4))
     
-    # Weighted Cluster coefficient
-    ggplot(Data, aes(x=granularity, y=cluster)) + 
-      geom_boxplot(fill="gray75", size = 0.35, outlier.shape = NA, alpha=1, colour='gray10') + 
-      xlab("Granularity") +
-      ylim(lim, 1) +
-      ggtitle('Cluster coefficient') +
-      theme(plot.title = element_text(hjust = 0.5)) +
-      geom_jitter(width = 0.15, size = 1, colour='gray10', alpha=0.6) +
-      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-            panel.background = element_blank(), axis.line = element_line(colour = "black")),
-    ncol=4, nrow = 1
-  )
-  plot(g)
-  dev.off()
+    # Correlation plot of all the variables 
+    data.corr.mtx <- aggregate(cbind(edges.100,edges.400,edges.1000,strength.100,strength.400,strength.1000,path.100,path.400,path.1000,cluster.100,cluster.400,cluster.1000)~modality, data = data.corr.wide, mean)[c(2,4,1,3),]
+    rownames(data.corr.mtx) <- data.corr.mtx$modality; data.corr.mtx$modality <- NULL
+    data.corr.mtx <- as.matrix(data.corr.mtx)
+    
+    # Plot and save the correlation matrix
+    png(paste0(dataset, "_correlation.png"), units = "px", width = 700, height = 350)
+    corrplot(data.corr.mtx, is.corr = FALSE, method = 'color',addCoef.col = 'gray10', title = dataset, cl.lim = c(0,1),cl.ratio = 0.6, cl.pos = 'b', col = rep(cividis(128),2), tl.col = 'black')
+    dev.off()
+  } else {
+    print(paste('[INFO].... EMPTY csv table:', dataset))
+  }
 }
+
 
 # ------------------------------------------------------------------------------- #
 #### Surface plot of the mean GTA ####
+norm01 <- function(x) {
+  zi <- (x -min(x)) / (max(x)-min(x))
+  return(zi)
+}
+
 data.mean <- read.csv("MICS_node-means.csv")
 
+# My color function
+mymagma <- colorRampPalette(c(rep("gray75",2), brewer.pal(9, 'YlOrRd')))
 
+  library("fsbrain")
+  library("freesurferformats")
+  
+  for (grain in c(100, 400, 1000)){
+    # fsaverage5: read annotation files
+    # left
+    lh_annot_file <- paste0("/Users/rcruces/git_here/micapipe/parcellations/lh.schaefer-",as.character(grain),"_mics.annot")
+    lh_annot = read.fs.annot(lh_annot_file)
+    # right
+    rh_annot_file <- paste0("/Users/rcruces/git_here/micapipe/parcellations/rh.schaefer-",as.character(grain),"_mics.annot")
+    rh_annot = read.fs.annot(rh_annot_file)
+    
+    # labels
+    atlas_region_names.lh <- lh_annot$colortable$struct_names
+    atlas_region_names.rh <- rh_annot$colortable$struct_names  
+    
+    # fsverage5 read surfaces
+    pial.lh <- read.fs.surface(filepath = '/Users/rcruces/git_here/micapipe/surfaces/fsaverage5/surf/lh.pial')
+    pial.rh <- read.fs.surface(filepath = '/Users/rcruces/git_here/micapipe/surfaces/fsaverage5/surf/rh.pial')
+    
+    # Region-based results
+    annot_values <- data.mean %>% filter(granularity==grain, modality=='SC') %>% select(strength)
+    N <- length(annot_values[,1])
+    annot_values <- norm01(annot_values)
+    # left 
+    annot_values.lh <- c(NaN, annot_values[1:(N/2),1])
+    names(annot_values.lh) <- atlas_region_names.lh
+    # right
+    annot_values.rh <- c(NaN, annot_values[((N/2)+1):N,1])
+    names(annot_values.rh) <- atlas_region_names.rh
+    
+    # Set the color limits (1st and 3rd quantile)
+    lf= limit_fun(quantile(annot_values[,1], prob=0.2), quantile(annot_values[,1], prob=0.95))
+    
+    # Values to vertex
+    val.lh <- spread.values.over.annot(annot = lh_annot, region_value_list = annot_values.lh, value_for_unlisted_regions = NaN)
+    val.rh <- spread.values.over.annot(annot = rh_annot, region_value_list = annot_values.rh, value_for_unlisted_regions = NaN)
+    
+    # Create the coloredmeshes
+    cml <- coloredmesh.from.preloaded.data(pial.lh, morph_data = lf(val.lh$spread_data), hemi = 'lh', makecmap_options = list('colFn'=mymagma))
+    cmr <- coloredmesh.from.preloaded.data(pial.rh, morph_data = lf(val.rh$spread_data), hemi = 'rh', makecmap_options = list('colFn'=mymagma))
+    
+    # cretate the color mesh
+    sph.nat <- brainviews(views = 't4', coloredmeshes=list('lh'=cml, 'rh'=cmr), rglactions = list('no_vis'=T))
+  }
+
+  
+
+  
+  
