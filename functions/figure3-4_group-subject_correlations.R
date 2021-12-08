@@ -13,16 +13,19 @@ library("igraph")
 library("tidyverse")
 library("gridExtra")   # Array for ggplots, equivalent of par(mfrow) 
 library("corrplot")
+library("fsbrain")
+library("freesurferformats")
+library("rgl")
 
 # --------------------------------------------------------------------------------- #
-#### Definen functions ####
-# Strenght
+#### Funtions ####
+# function: Strenght
 strenght_wu <- function(M){
   S <- apply(M,2,sum)
   return(S)c
 }
 
-# Weighted charachteristical path length
+# function: Weighted charachteristical path length
 nodal_lenght <- function(M){
   M <- 1/M
   M[which(M==-Inf)] <- Inf
@@ -34,19 +37,21 @@ nodal_lenght <- function(M){
   return(L)
 }
 
-# Weighted clustering coefficent
+# function: Weighted clustering coefficent
 cc_wu <- function(M){
   Mnet <- graph_from_adjacency_matrix( M ,mode="undirected",weighted = TRUE,diag = FALSE) 
   CCw <- transitivity(Mnet,type="weighted",weights=E(Mnet)$weight)
   return(CCw)
 }
 
+# function: fischer transformation
 fisher <- function(rho) {
   r = (1+rho)/(1-rho)
   z = 0.5*log(r,base = exp(1))
   return(z)
 }
 
+# function: load connectomes
 load.mtx <- function(File, conn) {
   # Load the cortical connectome
   mtx <- as.matrix(read.csv(File, sep=" ", header <- FALSE,))
@@ -78,9 +83,16 @@ load.mtx <- function(File, conn) {
   return(mtx)
 }
 
+# function: Proportional threshold
 proportional.thr <- function(M, thr=0.8) {
   M[which(M < quantile(M, prob=thr), arr.ind=TRUE)] <-0
   return(M)
+}
+
+# function: Normalize from 0 to 1
+norm01 <- function(x) {
+  zi <- (x -min(x)) / (max(x)-min(x))
+  return(zi)
 }
 
 # --------------------------------------------------------------------------------- #
@@ -143,7 +155,7 @@ for (dataset in datasets){
           Col=brewer.pal(9,'Greens')
           Mplot <- Mavg    
         }
-        png(paste0(mod, "_", dataset, "_", parc, ".png"), units = "px", width = 500, height = 500)
+        png(paste0("./gta/connectomes/",mod, "_", dataset, "_", parc, ".png"), units = "px", width = 500, height = 500)
         image(Mplot, axes=FALSE, main=paste(mod, "mean, granularity:", parc), col=Col)
         dev.off()
         
@@ -267,7 +279,7 @@ for (dataset in datasets) {
       lim <- 0
       
       # plot and save the data
-      svg(filename=paste0(dataset,'-',mod,"_SubjectGroup-rho.svg"), width=13 , height=3 , pointsize=300, bg='transparent')
+      svg(filename=paste0("./gta/boxplots/",dataset,'-',mod,"_SubjectGroup-rho.svg"), width=13 , height=3 , pointsize=300, bg='transparent')
       g=grid.arrange(
         # Edges
         ggplot(Data, aes(x=granularity, y=edges)) + 
@@ -330,7 +342,7 @@ for (dataset in datasets) {
     
     # Plot and save the correlation matrix
     png(paste0(dataset, "_correlation.png"), units = "px", width = 700, height = 350)
-    corrplot(data.corr.mtx, is.corr = FALSE, method = 'color',addCoef.col = 'gray10', title = dataset, cl.lim = c(0,1),cl.ratio = 0.6, cl.pos = 'b', col = rep(cividis(128),2), tl.col = 'black')
+    corrplot(data.corr.mtx, is.corr = FALSE, method = 'color',addCoef.col = 'gray10', title = dataset, cl.lim = c(0,1),cl.ratio = 0.6, cl.pos = 'b', col = rep(brewer.pal(9,'Reds'),2), tl.col = 'black')
     dev.off()
   } else {
     print(paste('[INFO].... EMPTY csv table:', dataset))
@@ -340,63 +352,72 @@ for (dataset in datasets) {
 
 # ------------------------------------------------------------------------------- #
 #### Surface plot of the mean GTA ####
-norm01 <- function(x) {
-  zi <- (x -min(x)) / (max(x)-min(x))
-  return(zi)
-}
-
-data.mean <- read.csv("MICS_node-means.csv")
+# fsverage5 read surfaces
+pial.lh <- read.fs.surface(filepath = '/Users/rcruces/git_here/micapipe/surfaces/fsaverage5/surf/lh.pial')
+pial.rh <- read.fs.surface(filepath = '/Users/rcruces/git_here/micapipe/surfaces/fsaverage5/surf/rh.pial')
 
 # My color function
 mymagma <- colorRampPalette(c(rep("gray75",2), brewer.pal(9, 'YlOrRd')))
 
-  library("fsbrain")
-  library("freesurferformats")
+# Plot Nodal features on surfaces by dataset, modality and granularity
+for (dataset in c('MICS', 'CamCAN', 'EpiC', 'EpiC2', 'audiopath', 'sudmex', 'MSC')) {
   
-  for (grain in c(100, 400, 1000)){
-    # fsaverage5: read annotation files
-    # left
-    lh_annot_file <- paste0("/Users/rcruces/git_here/micapipe/parcellations/lh.schaefer-",as.character(grain),"_mics.annot")
-    lh_annot = read.fs.annot(lh_annot_file)
-    # right
-    rh_annot_file <- paste0("/Users/rcruces/git_here/micapipe/parcellations/rh.schaefer-",as.character(grain),"_mics.annot")
-    rh_annot = read.fs.annot(rh_annot_file)
+  # Read dataset 
+  data.mean <- read.csv(paste0(dataset, "_node-means.csv"))
+  
+  # for each each modality
+  for (mod in c('GD', 'SC', 'FC', 'MPC')) {
     
-    # labels
-    atlas_region_names.lh <- lh_annot$colortable$struct_names
-    atlas_region_names.rh <- rh_annot$colortable$struct_names  
-    
-    # fsverage5 read surfaces
-    pial.lh <- read.fs.surface(filepath = '/Users/rcruces/git_here/micapipe/surfaces/fsaverage5/surf/lh.pial')
-    pial.rh <- read.fs.surface(filepath = '/Users/rcruces/git_here/micapipe/surfaces/fsaverage5/surf/rh.pial')
-    
-    # Region-based results
-    annot_values <- data.mean %>% filter(granularity==grain, modality=='SC') %>% select(strength)
-    N <- length(annot_values[,1])
-    annot_values <- norm01(annot_values)
-    # left 
-    annot_values.lh <- c(NaN, annot_values[1:(N/2),1])
-    names(annot_values.lh) <- atlas_region_names.lh
-    # right
-    annot_values.rh <- c(NaN, annot_values[((N/2)+1):N,1])
-    names(annot_values.rh) <- atlas_region_names.rh
-    
-    # Set the color limits (1st and 3rd quantile)
-    lf= limit_fun(quantile(annot_values[,1], prob=0.2), quantile(annot_values[,1], prob=0.95))
-    
-    # Values to vertex
-    val.lh <- spread.values.over.annot(annot = lh_annot, region_value_list = annot_values.lh, value_for_unlisted_regions = NaN)
-    val.rh <- spread.values.over.annot(annot = rh_annot, region_value_list = annot_values.rh, value_for_unlisted_regions = NaN)
-    
-    # Create the coloredmeshes
-    cml <- coloredmesh.from.preloaded.data(pial.lh, morph_data = lf(val.lh$spread_data), hemi = 'lh', makecmap_options = list('colFn'=mymagma))
-    cmr <- coloredmesh.from.preloaded.data(pial.rh, morph_data = lf(val.rh$spread_data), hemi = 'rh', makecmap_options = list('colFn'=mymagma))
-    
-    # cretate the color mesh
-    sph.nat <- brainviews(views = 't4', coloredmeshes=list('lh'=cml, 'rh'=cmr), rglactions = list('no_vis'=T))
+    # for each feature
+    for (feat in c('strength', 'path', 'cluster')) {
+      # for each granularity
+      for (grain in c(100, 400, 1000)){
+        # fsaverage5: read annotation files
+        # left
+        lh_annot_file <- paste0("/Users/rcruces/git_here/micapipe/parcellations/lh.schaefer-",as.character(grain),"_mics.annot")
+        lh_annot = read.fs.annot(lh_annot_file)
+        # right
+        rh_annot_file <- paste0("/Users/rcruces/git_here/micapipe/parcellations/rh.schaefer-",as.character(grain),"_mics.annot")
+        rh_annot = read.fs.annot(rh_annot_file)
+        
+        # labels
+        atlas_region_names.lh <- lh_annot$colortable$struct_names
+        atlas_region_names.rh <- rh_annot$colortable$struct_names  
+        
+        # Region-based results
+        annot_values <- data.mean %>% filter(granularity==grain, modality==mod)
+        val <- annot_values[,c(feat)]
+        N <- length(val)
+        
+        # Normalize the values
+        annot_values <- norm01(val)
+        
+        # left 
+        annot_values.lh <- c(NaN, annot_values[1:(N/2)])
+        names(annot_values.lh) <- atlas_region_names.lh
+        # right
+        annot_values.rh <- c(NaN, annot_values[((N/2)+1):N])
+        names(annot_values.rh) <- atlas_region_names.rh
+        
+        # Set the color limits (1st and 3rd quantile)
+        lf= limit_fun(quantile(annot_values, prob=0.2), quantile(annot_values, prob=0.95))
+        lf = limit_fun(0,1)
+        # Values to vertex
+        val.lh <- spread.values.over.annot(annot = lh_annot, region_value_list = annot_values.lh, value_for_unlisted_regions = NaN)
+        val.rh <- spread.values.over.annot(annot = rh_annot, region_value_list = annot_values.rh, value_for_unlisted_regions = NaN)
+        
+        # Create the coloredmeshes
+        cml <- coloredmesh.from.preloaded.data(pial.lh, morph_data = lf(val.lh$spread_data), hemi = 'lh', makecmap_options = list('colFn'=mymagma))
+        cmr <- coloredmesh.from.preloaded.data(pial.rh, morph_data = lf(val.rh$spread_data), hemi = 'rh', makecmap_options = list('colFn'=mymagma))
+        
+        # cretate the color mesh
+        colormesh <- brainviews(views = 't4', coloredmeshes=list('lh'=cml, 'rh'=cmr), rglactions = list('trans_fun'=limit_fun(0, 1), 'no_vis'=T))
+        # save the figure
+        vis.export.from.coloredmeshes(colormesh, grid_like = FALSE, view_angles = c('sd_lateral_lh', 'sd_lateral_rh'), colorbar_legend=paste0(feat," ", grain),
+                                      img_only = TRUE, horizontal=TRUE, output_img = paste0("./gta/surfaces/",dataset,"_",mod,"_",feat,"_", grain,".png"))
+        # clean env
+        while (rgl.cur() > 0) { rgl.close() }; file.remove(list.files(path = getwd(), pattern = 'fsbrain'))
+      }
+    }
   }
-
-  
-
-  
-  
+}
