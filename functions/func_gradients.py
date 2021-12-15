@@ -11,6 +11,7 @@ Created on Fri Sep 24 15:29:13 2021
 # ----------------------------------------------------------------------------
 # Set the environment
 import os
+import glob
 import numpy as np
 import nibabel as nb
 from brainspace.plotting import plot_hemispheres
@@ -84,21 +85,22 @@ def load_mpc(File, Ndim):
     # Mirror the matrix
     MPC = np.triu(mtx_mpc,1)+mtx_mpc.T
     
-    # Renove the medial wall
+    # Remove the medial wall
     MPC = np.delete(np.delete(MPC, 0, axis=0), 0, axis=1)
     MPC = np.delete(np.delete(MPC, Ndim, axis=0), Ndim, axis=1)
     
     return MPC
 
-def load_mtxs(Path, Ndim, func):
+def load_mtxs(Path, Ndim, func, pattern):
     # List all the files
-    files = os.listdir(Path)
+    # files = os.listdir(Path)
+    files = glob.glob( Path + '*' + pattern + '_*' )
     
     # Load all the matrices
     M=np.empty([Ndim*2, Ndim*2, len(files)], dtype=float)
     for i, f in enumerate(files):
         print(f)
-        M[:,:,i] = func(Path+f, Ndim)
+        M[:,:,i] = func(f, Ndim)
         
     return M
 

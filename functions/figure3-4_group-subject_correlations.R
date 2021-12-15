@@ -1,6 +1,6 @@
 # R script
 #
-# Figure 3 and 4 micapipe 
+# Figure 3 micapipe 
 # Subject-Group mean Correlation coefficients, edges, and graph theoretical analisys
 # R version 3.6.3
 #
@@ -17,83 +17,8 @@ library("fsbrain")
 library("freesurferformats")
 library("rgl")
 
-# --------------------------------------------------------------------------------- #
-#### Funtions ####
-# function: Strenght
-strenght_wu <- function(M){
-  S <- apply(M,2,sum)
-  return(S)c
-}
-
-# function: Weighted charachteristical path length
-nodal_lenght <- function(M){
-  M <- 1/M
-  M[which(M==-Inf)] <- Inf
-  Lnet <- graph_from_adjacency_matrix( (M) ,mode="undirected",weighted = TRUE,diag = FALSE) 
-  D <- distances(Lnet,algorithm = "dijkstra",weights=E(Lnet)$weight)
-  if(sum(is.infinite(D))>0) D[is.infinite(D)] <- max(D[!is.infinite(D)]) # in order to avoid infinite numbers (Fornito et al., 2010)
-  diag(D) <- 0
-  L <- apply(D,1,sum)/(dim(M)[1]-1)
-  return(L)
-}
-
-# function: Weighted clustering coefficent
-cc_wu <- function(M){
-  Mnet <- graph_from_adjacency_matrix( M ,mode="undirected",weighted = TRUE,diag = FALSE) 
-  CCw <- transitivity(Mnet,type="weighted",weights=E(Mnet)$weight)
-  return(CCw)
-}
-
-# function: fischer transformation
-fisher <- function(rho) {
-  r = (1+rho)/(1-rho)
-  z = 0.5*log(r,base = exp(1))
-  return(z)
-}
-
-# function: load connectomes
-load.mtx <- function(File, conn) {
-  # Load the cortical connectome
-  mtx <- as.matrix(read.csv(File, sep=" ", header <- FALSE,))
-  n <- dim(mtx)[1]
-  
-  if (conn!='GD') {
-  # print("Filling the lower triangle of the matrix")
-  mtx[lower.tri(mtx)] <- t(mtx)[lower.tri(mtx)]
-  }
-
-  if (conn=='SC' | conn=='FC') {
-    mtx <- mtx[50:n, 50:n]
-    indx <- ((dim(mtx)[1]-1)/2)+1
-    mtx <- mtx[-indx,-indx]
-  }
-  
-  if (conn=='MPC' | conn=='GD' ) {
-    mtx <- mtx[-1,-1]
-    indx <- ((dim(mtx)[1]-1)/2)+1
-    mtx <- mtx[-indx,-indx]
-  
-    if (conn=='FC') {
-      print("Fisher transform")
-      mtx <- fisher(mtx)
-      # replace inf with 0
-      mtx[is.infinite(mtx)] <- 0
-    }
-  }
-  return(mtx)
-}
-
-# function: Proportional threshold
-proportional.thr <- function(M, thr=0.8) {
-  M[which(M < quantile(M, prob=thr), arr.ind=TRUE)] <-0
-  return(M)
-}
-
-# function: Normalize from 0 to 1
-norm01 <- function(x) {
-  zi <- (x -min(x)) / (max(x)-min(x))
-  return(zi)
-}
+# heper functions
+source("~/git_here/micapipe-supplementary/functions/functions.R")
 
 # --------------------------------------------------------------------------------- #
 #### Group - subject correlations ####
@@ -160,7 +85,7 @@ for (dataset in datasets){
         dev.off()
         
         # ------------------------------------------------------------------------------- #
-        #### EDGES: Subject to group correlations #### 
+        # EDGES: Subject to group correlations
         # Correlation of the edges | upper triangle only
         Cor <- c()
         for (i in 1:N) {
@@ -168,7 +93,7 @@ for (dataset in datasets){
         }
         
         # ------------------------------------------------------------------------------- #
-        #### Graph theoretical analysis: Subject to group correlations ####
+        # Graph theoretical analysis: Subject to group correlations
         # Sparcity threshold, top 20% of the connections except in SC
         if (mod!='SC') {
           tmp <- sapply(1:N, function(x) proportional.thr(mtxs[,,x], 0.8))
@@ -263,13 +188,43 @@ for (dataset in datasets){
 
 # ------------------------------------------------------------------------------- #
 #### Boxplot of the subject-group correspondance ####
-datasets <- c('MICS', 'CamCAN', 'EpiC', 'EpiC2', 'audiopath', 'sudmex', 'MSC')
+datasets <- c('MICS', 'CamCAN', 'EpiC', 'EpiC2', 'sudmex', 'MSC', 'audiopath')
 for (dataset in datasets) {
   data.corr <- c()
   try(data.corr <- read.csv(paste0(dataset,"_correlations.csv")))
   
   if (!is.null(data.corr)) {
     print(paste('[INFO].... plotting', dataset))
+    data.corr$granularity <- as.factor(data.corr$granularity)
+    
+    # read the gradients by granularity and parcelation
+    grains <- c(100, 400, 1000)
+    modalities <- c('GD', 'SC', 'FC', 'MPC')
+    G1 <- c()
+    for (grain in grains) {
+      for (mod in modalities) { Gs <- c()
+        File <- paste0("csv_rho/",dataset,"-",as.character(grain),"_", mod, "-rho.csv")
+        if (file.exists(File)) {
+          Gs <- read.csv(File, header = FALSE)[,1]
+          size <- length(Gs)
+          G1 <- rbind(G1, data.frame(granularity=rep(grain, size), modality=rep(mod, size), G1=Gs))
+        }
+      }
+    }
+    
+    # Gradients: Create a unique id for each modality/granularity
+    id <- paste0(G1$granularity, '-', G1$modality)
+    idN <- c(); for (i in table(id)) { idN <- c(idN, 1:i)}
+    G1$id <- paste0(id, '-',sprintf("%03d", idN))
+
+    # GTA: Create a unique id for each modality/granularity
+    data.corr$id <- paste0(data.corr$granularity, '-', data.corr$modality)
+    data.corr <- data.corr[order(data.corr$id),]
+    idN <- c(); for (i in table(data.corr$id)) { idN <- c(idN, 1:i)}
+    data.corr$id <- paste0(data.corr$id, '-',sprintf("%03d", idN))
+    
+    # merge data
+    data.corr <- merge(data.corr, G1[,3:4], by = 'id')
     data.corr$granularity <- as.factor(data.corr$granularity)
     
     for (mod in modalities) {
@@ -279,14 +234,25 @@ for (dataset in datasets) {
       lim <- 0
       
       # plot and save the data
-      svg(filename=paste0("./gta/boxplots/",dataset,'-',mod,"_SubjectGroup-rho.svg"), width=13 , height=3 , pointsize=300, bg='transparent')
+      svg(filename=paste0("./gta/boxplots/",dataset,'-',mod,"_SubjectGroup-rho.svg"), width=16 , height=3 , pointsize=300, bg='transparent')
       g=grid.arrange(
+        # Gradient 1
+        ggplot(Data, aes(x=granularity, y=G1)) + 
+          geom_boxplot(fill="gray75", size = 0.35, outlier.shape = NA, alpha=1, colour='gray10') + 
+          xlab("Granularity") +
+          ylim(lim, 1) +
+          ggtitle(paste0(dataset, '-', mod, ': ', 'Gradient 1')) +
+          theme(plot.title = element_text(hjust = 0.5)) +
+          geom_jitter(width = 0.15, size = 1, colour='gray10', alpha=0.6) +
+          theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                panel.background = element_blank(), axis.line = element_line(colour = "black")),
+        
         # Edges
         ggplot(Data, aes(x=granularity, y=edges)) + 
           geom_boxplot(fill="gray75", size = 0.35, outlier.shape = NA, alpha=1, colour='gray10') + 
           xlab("Granularity") +
           ylim(lim, 1) +
-          ggtitle(paste0(dataset, '-', mod, ': ', 'Edges') ) +
+          ggtitle('Edges') +
           theme(plot.title = element_text(hjust = 0.5)) +
           geom_jitter(width = 0.15, size = 1, colour='gray10', alpha=0.6) +
           theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
@@ -324,31 +290,39 @@ for (dataset in datasets) {
           geom_jitter(width = 0.15, size = 1, colour='gray10', alpha=0.6) +
           theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
                 panel.background = element_blank(), axis.line = element_line(colour = "black")),
-        ncol=4, nrow = 1
+        ncol=5, nrow = 1
       )
       plot(g)
       dev.off()
     }
-    
-    # Long to wide format
+
+    # Long to wide format    
+    data.corr$id <- NULL
+    Nmin <- min(table(data.corr$granularity))
     data.corr.wide <- data.corr[data.corr$granularity==100,]
-    for (i in c(400, 1000)) { data.corr.wide <- cbind(data.corr.wide, data.corr[data.corr$granularity==i,3:6]) }
-    colnames(data.corr.wide)[3:14] <- paste0(rep(colnames(data.corr.wide)[3:6],3), rep(c('.100','.400','.1000'), each=4))
+    data.corr.wide <- data.corr.wide[1:Nmin,]
+    for (i in c(400, 1000)) { data.corr.wide <- cbind(data.corr.wide, data.corr[data.corr$granularity==i,3:7][1:Nmin,]) }
+    colnames(data.corr.wide)[3:17] <- paste0(rep(colnames(data.corr.wide)[3:7],3), rep(c('.100','.400','.1000'), each=5))
+    data.corr.wide$granularity <- NULL
     
     # Correlation plot of all the variables 
-    data.corr.mtx <- aggregate(cbind(edges.100,edges.400,edges.1000,strength.100,strength.400,strength.1000,path.100,path.400,path.1000,cluster.100,cluster.400,cluster.1000)~modality, data = data.corr.wide, mean)[c(2,4,1,3),]
-    rownames(data.corr.mtx) <- data.corr.mtx$modality; data.corr.mtx$modality <- NULL
+    data.corr.mtx <- aggregate(cbind(G1.100,G1.400,G1.1000,edges.100,edges.400,edges.1000,strength.100,strength.400,strength.1000,path.100,path.400,path.1000,cluster.100,cluster.400,cluster.1000)~modality, data = data.corr.wide, mean)
+    rownames(data.corr.mtx) <- data.corr.mtx$modality
+    data.corr.mtx <- data.corr.mtx[c('GD', 'SC', 'FC', 'MPC'), ]
+    data.corr.mtx$modality <- NULL
+    data.corr.mtx[is.na(data.corr.mtx)] <- 0
     data.corr.mtx <- as.matrix(data.corr.mtx)
     
+
     # Plot and save the correlation matrix
     png(paste0(dataset, "_correlation.png"), units = "px", width = 700, height = 350)
     corrplot(data.corr.mtx, is.corr = FALSE, method = 'color',addCoef.col = 'gray10', title = dataset, cl.lim = c(0,1),cl.ratio = 0.6, cl.pos = 'b', col = rep(brewer.pal(9,'Reds'),2), tl.col = 'black')
     dev.off()
+    
   } else {
     print(paste('[INFO].... EMPTY csv table:', dataset))
   }
 }
-
 
 # ------------------------------------------------------------------------------- #
 #### Surface plot of the mean GTA ####
