@@ -336,7 +336,7 @@ mymagma <- colorRampPalette(c(rep("gray75",2), brewer.pal(9, 'YlOrRd')))
 # Plot Nodal features on surfaces by dataset, modality and granularity
 for (dataset in c('MICS', 'CamCAN', 'EpiC', 'EpiC2', 'audiopath', 'sudmex', 'MSC')) {
   
-  # Read dataset 
+  # Read dataset
   data.mean <- read.csv(paste0(dataset, "_node-means.csv"))
   
   # for each each modality
@@ -360,37 +360,39 @@ for (dataset in c('MICS', 'CamCAN', 'EpiC', 'EpiC2', 'audiopath', 'sudmex', 'MSC
         
         # Region-based results
         annot_values <- data.mean %>% filter(granularity==grain, modality==mod)
-        val <- annot_values[,c(feat)]
-        N <- length(val)
-        
-        # Normalize the values
-        annot_values <- norm01(val)
-        
-        # left 
-        annot_values.lh <- c(NaN, annot_values[1:(N/2)])
-        names(annot_values.lh) <- atlas_region_names.lh
-        # right
-        annot_values.rh <- c(NaN, annot_values[((N/2)+1):N])
-        names(annot_values.rh) <- atlas_region_names.rh
-        
-        # Set the color limits (1st and 3rd quantile)
-        lf= limit_fun(quantile(annot_values, prob=0.2), quantile(annot_values, prob=0.95))
-        lf = limit_fun(0,1)
-        # Values to vertex
-        val.lh <- spread.values.over.annot(annot = lh_annot, region_value_list = annot_values.lh, value_for_unlisted_regions = NaN)
-        val.rh <- spread.values.over.annot(annot = rh_annot, region_value_list = annot_values.rh, value_for_unlisted_regions = NaN)
-        
-        # Create the coloredmeshes
-        cml <- coloredmesh.from.preloaded.data(pial.lh, morph_data = lf(val.lh$spread_data), hemi = 'lh', makecmap_options = list('colFn'=mymagma))
-        cmr <- coloredmesh.from.preloaded.data(pial.rh, morph_data = lf(val.rh$spread_data), hemi = 'rh', makecmap_options = list('colFn'=mymagma))
-        
-        # cretate the color mesh
-        colormesh <- brainviews(views = 't4', coloredmeshes=list('lh'=cml, 'rh'=cmr), rglactions = list('trans_fun'=limit_fun(0, 1), 'no_vis'=T))
-        # save the figure
-        vis.export.from.coloredmeshes(colormesh, grid_like = FALSE, view_angles = c('sd_lateral_lh', 'sd_lateral_rh'), colorbar_legend=paste0(feat," ", grain),
-                                      img_only = TRUE, horizontal=TRUE, output_img = paste0("./gta/surfaces/",dataset,"_",mod,"_",feat,"_", grain,".png"))
-        # clean env
-        while (rgl.cur() > 0) { rgl.close() }; file.remove(list.files(path = getwd(), pattern = 'fsbrain'))
+        if (length(annot_values$roi)>0) {
+          val <- annot_values[,c(feat)]
+          N <- length(val)
+          
+          # Normalize the values
+          annot_values <- norm01(val)
+          
+          # left 
+          annot_values.lh <- c(NaN, annot_values[1:(N/2)])
+          names(annot_values.lh) <- atlas_region_names.lh
+          # right
+          annot_values.rh <- c(NaN, annot_values[((N/2)+1):N])
+          names(annot_values.rh) <- atlas_region_names.rh
+          
+          # Set the color limits (1st and 3rd quantile)
+          lf= limit_fun(quantile(annot_values, prob=0.2), quantile(annot_values, prob=0.95))
+          lf = limit_fun(0,1)
+          # Values to vertex
+          val.lh <- spread.values.over.annot(annot = lh_annot, region_value_list = annot_values.lh, value_for_unlisted_regions = NaN)
+          val.rh <- spread.values.over.annot(annot = rh_annot, region_value_list = annot_values.rh, value_for_unlisted_regions = NaN)
+          
+          # Create the coloredmeshes
+          cml <- coloredmesh.from.preloaded.data(pial.lh, morph_data = lf(val.lh$spread_data), hemi = 'lh', makecmap_options = list('colFn'=mymagma))
+          cmr <- coloredmesh.from.preloaded.data(pial.rh, morph_data = lf(val.rh$spread_data), hemi = 'rh', makecmap_options = list('colFn'=mymagma))
+          
+          # cretate the color mesh
+          colormesh <- brainviews(views = 't4', coloredmeshes=list('lh'=cml, 'rh'=cmr), rglactions = list('trans_fun'=limit_fun(0, 1), 'no_vis'=T))
+          # save the figure
+          vis.export.from.coloredmeshes(colormesh, grid_like = FALSE, view_angles = c('sd_lateral_lh', 'sd_lateral_rh'), colorbar_legend=paste0(feat," ", grain),
+                                        img_only = TRUE, horizontal=TRUE, output_img = paste0("./gta/surfaces/",dataset,"_",mod,"_",feat,"_", grain,".png"))
+          # clean env
+          while (rgl.cur() > 0) { rgl.close() }; file.remove(list.files(path = getwd(), pattern = 'fsbrain'))
+        }
       }
     }
   }
