@@ -155,8 +155,7 @@ echo "sub, T1w_MPR1, T1w_MPR2, T2w_SPC1, T2w_SPC2, rfMRI_REST1_LR_bold, rfMRI_RE
 subjects=($(ls $in))
 
 # For each subject
-#for id in ${subjects[@]}; do
-for id in 990366; do
+for id in ${subjects[@]}; do
   Info "processing sub-${id}"
   # get the id and the HCP directory
   hcp_dir=${in}/${id}/unprocessed/3T
@@ -180,8 +179,8 @@ for id in 990366; do
     fileName="${fileName}, ${anat}"
     if [[ -f "${tw}" ]]; then
         files="${files}, 1"
-        echo cp $tw ${tw_bids}.nii.gz
-        json_anat ${img} ${tw_bids}.json
+        Do_cmd cp $tw ${tw_bids}.nii.gz
+        Do_cmd json_anat ${img} ${tw_bids}.json
     else
         files="${files}, 0"
     fi
@@ -196,15 +195,15 @@ for id in 990366; do
         fileName="${fileName}, ${func}_${dir}_bold, ${func}_${dir}_sbref"
         if [[ -f "${hcp}.nii.gz" ]]; then
             files="${files}, 1"
-            echo cp "${hcp}.nii.gz" ${bids}_bold.nii.gz
-            json_func ${dir} ${bids}_bold.json
+            Do_cmd cp "${hcp}.nii.gz" ${bids}_bold.nii.gz
+            Do_cmd json_func ${dir} ${bids}_bold.json
         else
             files="${files}, 0"
         fi
         if [[ -f "${hcp}_SBRef.nii.gz" ]]; then
             files="${files}, 1"
-            echo cp "${hcp}_SBRef.nii.gz" ${bids}_sbref.nii.gz
-            json_func ${dir} ${bids}_sbref.json
+            Do_cmd cp "${hcp}_SBRef.nii.gz" ${bids}_sbref.nii.gz
+            Do_cmd json_func ${dir} ${bids}_sbref.json
         else
             files="${files}, 0"
         fi
@@ -219,17 +218,17 @@ for id in 990366; do
         fileName="${fileName}, DWI_${acq}_${dir}, DWI_${acq}_${dir}_sbref"
         if [[ -f "${hcp}.nii.gz" ]]; then
             files="${files}, 1"
-            echo cp "${hcp}.nii.gz" "${bids}_dwi.nii.gz"
-            echo cp "${hcp}.bval" "${bids}_dwi.bval"
-            echo cp "${hcp}.bvec" "${bids}_dwi.bvec"
-            json_dwi ${dir} ${bids}_dwi.json
+            Do_cmd cp "${hcp}.nii.gz" "${bids}_dwi.nii.gz"
+            Do_cmd cp "${hcp}.bval" "${bids}_dwi.bval"
+            Do_cmd cp "${hcp}.bvec" "${bids}_dwi.bvec"
+            Do_cmd json_dwi ${dir} ${bids}_dwi.json
         else
             files="${files}, 0"
         fi
         if [[ -f "${hcp}_SBRef.nii.gz" ]]; then
             files="${files}, 1"
-            echo cp "${hcp}_SBRef.nii.gz" ${bids}_sbref.nii.gz
-            json_dwi ${dir} ${bids}_sbref.json
+            Do_cmd cp "${hcp}_SBRef.nii.gz" ${bids}_sbref.nii.gz
+            Do_cmd json_dwi ${dir} ${bids}_sbref.json
         else
             files="${files}, 0"
         fi
