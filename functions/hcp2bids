@@ -1,0 +1,247 @@
+#!/bin/bash
+# MICA T1w/T2
+#
+# This script will create a T1w/T2 using two files from the rawdata directory
+#
+#
+#
+#
+#
+
+help() {
+echo -e "
+\033[38;5;141mCOMMAND:\033[0m
+   $(basename $0)
+
+\033[38;5;141mARGUMENTS:\033[0m
+\t\033[38;5;197m-in\033[0m 	        : HCP directory
+\t\033[38;5;197m-out\033[0m      	: Output directory in BIDS (eg. ./rawdata)
+
+\033[38;5;141mUSAGE:\033[0m
+\033[38;5;141m$(basename $0)\033[0m  \033[38;5;197m-in\033[0m <HCP_dir> \033[38;5;197m-out\033[0m <Bids>
+
+RRC
+McGill University, MNI, MICA-lab, May 2022
+https://github.com/MICA-MNI
+http://mica-mni.github.io/
+"
+}
+
+# source print funtions for MICAPIPE
+source "${MICAPIPE}/functions/utilities.sh"
+
+# -----------------------------------------------------------------------------------------------#
+#			ARGUMENTS
+# Create VARIABLES
+for arg in "$@"
+do
+  case "$arg" in
+  -h|-help)
+    help
+    exit 1
+  ;;
+  -in)
+    in=$2
+    shift;shift
+  ;;
+  -out)
+    out=$2
+    shift;shift
+  ;;
+  -*)
+    Error "Unknown option ${2}"
+    help
+    exit
+  ;;
+    esac
+done
+
+#------------------------------------------------------------------------------#
+# argument check out & WARNINGS
+arg=($in $out)
+if [ "${#arg[@]}" -lt 2 ]; then
+Error "One or more mandatory arguments are missing:
+               -in  : $in
+               -out  : $out"
+exit 1; fi
+
+# Get the real path of the Inputs
+out=$(realpath $out)
+in=$(realpath $in)
+
+# Metadata: json parameters were obtained from the HCP_S1200_release_reference_Manual
+# https://www.humanconnectome.org/storage/app/media/documentation/s1200/HCP_S1200_Release_Reference_Manual.pdf
+# T1w and T2w
+function json_anat() {
+  local img=$1
+  if [[ ${img} == "T1w" ]]; then
+      TR=2.4; TE=0.00214; seq="3D MPRAGE"; sesdes="T1w_MPR"; flip=8
+  elif [[ ${img} == "T2w" ]]; then
+      TR=3.2; TE=0.565; seq="3D T2-SPACE"; sesdes="T2w_SPC"; flip="\"variable\""
+  fi
+  echo -e "{
+    \"Modality\": \"MR\",
+    \"MagneticFieldStrength\": 3,
+    \"Manufacturer\": \"Siemens\",
+    \"ManufacturerModelName\": \"Skyra\",
+    \"ScanningSequence\": \"${seq}\",
+    \"SeriesDescription\": \"${sesdes}\",
+    \"RepetitionTime\": ${TR},
+    \"EchoTime\": ${TE},
+    \"FlipAngle\": ${flip},
+  }"
+}
+
+# func json
+function json_func() {
+  dir=$1
+  TR=0.72; TE=0.0331; seq="Gradient-echo EPI"; sesdes="rfMRI_REST"; flip=52; multibandfactor=8; EchoSpacing=0.00058; TotalReadoutTime=0.08346
+  if [ "${dir}" == 'LR' ]; then ped="i-"; else ped="i"; fi
+  echo -e "{
+      \"Modality\": \"MR\",
+      \"MagneticFieldStrength\": 3,
+      \"Manufacturer\": \"Siemens\",
+      \"ManufacturerModelName\": \"Skyra\",
+      \"ScanningSequence\": \"${seq}\",
+      \"SeriesDescription\": \"${sesdes}\",
+      \"RepetitionTime\": ${TR},
+      \"EchoTime\": ${TE},
+      \"FlipAngle\": ${flip},
+      \"EffectiveEchoSpacing\": ${EchoSpacing},
+      \"PhaseEncodingDirection\": \"${ped}\",
+      \"MultibandAccelerationFactor\": ${multibandfactor},
+      \"TotalReadoutTime\": ${TotalReadoutTime},
+      \"TaskName\": \"rest\"
+  }"
+}
+
+# dwi json
+function json_dwi() {
+  dir=$1
+  TR=5.52; TE=0.0895; seq="Spin-echo EPI"; sesdes="DWI"; flip=78; multibandfactor=3; EchoSpacing=0.00078; TotalReadoutTime=0.60
+  if [ "${dir}" == 'LR' ]; then ped="i-"; else ped="i"; fi
+  echo -e "{
+    \"Modality\": \"MR\",
+    \"MagneticFieldStrength\": 3,
+    \"Manufacturer\": \"Siemens\",
+    \"ManufacturerModelName\": \"Skyra\",
+    \"ScanningSequence\": \"${seq}\",
+    \"SeriesDescription\": \"${sesdes}\",
+    \"RepetitionTime\": ${TR},
+    \"EchoTime\": ${TE},
+    \"FlipAngle\": ${flip},
+    \"EffectiveEchoSpacing\": ${EchoSpacing},
+    \"PhaseEncodingDirection\": \"${ped}\",
+    \"MultibandAccelerationFactor\": ${multibandfactor},
+    \"TotalReadoutTime\": ${TotalReadoutTime}
+  }"
+}
+
+# -----------------------------------------------------------------------------------------------#
+#			  Timer & Beginning
+Title "Running HCP to Bids"
+aloita=$(date +%s)
+
+# dataset description
+echo -e "{
+    \"Name\": \"WashU/UMinn HCP\",
+    \"BIDSVersion\": \"1.9.3\"
+}" > ${out}/dataset_description.json
+
+# dataset files
+echo "sub, T1w_MPR1, T1w_MPR2, T2w_SPC1, T2w_SPC2, rfMRI_REST1_LR_bold, rfMRI_REST1_LR_sbref, rfMRI_REST1_RL_bold, rfMRI_REST1_RL_sbref, rfMRI_REST2_LR_bold, rfMRI_REST2_LR_sbref, rfMRI_REST2_RL_bold, rfMRI_REST2_RL_sbref, DWI_dir95_LR, DWI_dir95_LR_sbref, DWI_dir95_RL, DWI_dir95_RL_sbref, DWI_dir96_LR, DWI_dir96_LR_sbref, DWI_dir96_RL, DWI_dir96_RL_sbref, DWI_dir97_LR, DWI_dir97_LR_sbref, DWI_dir97_RL, DWI_dir97_RL_sbref" > ${out}/dataset_files.csv
+
+# Get subject ID's as list
+subjects=($(ls $in))
+
+# For each subject
+#for id in ${subjects[@]}; do
+for id in 990366; do
+  Info "processing sub-${id}"
+  # get the id and the HCP directory
+  hcp_dir=${in}/${id}/unprocessed/3T
+  subj=sub-${id}
+  bids_dir=${out}/${subj}
+
+  # create subjects directories
+  Do_cmd mkdir -p ${bids_dir}/{anat,func,dwi}
+
+  # check the files
+  files="${id}"
+  fileName="sub"
+
+  # T1w and T2w images images
+  anats=(T1w_MPR1 T1w_MPR2 T2w_SPC1 T2w_SPC2)
+  for anat in ${anats[@]}; do
+    run=${anat: -1}
+    img=${anat:0:3}
+    tw="${hcp_dir}/${anat}/${id}_3T_${anat}.nii.gz"
+    tw_bids=${bids_dir}/anat/${subj}_run-${run}_${img}
+    fileName="${fileName}, ${anat}"
+    if [[ -f "${tw}" ]]; then
+        files="${files}, 1"
+        echo cp $tw ${tw_bids}.nii.gz
+        json_anat ${img} ${tw_bids}.json
+    else
+        files="${files}, 0"
+    fi
+  done
+
+  # func image
+  for func in rfMRI_REST1 rfMRI_REST2; do
+    run=${func: -1}
+    for dir in LR RL; do
+        hcp="${hcp_dir}/${func}_${dir}/${id}_3T_${func}_${dir}"
+        bids=${bids_dir}/func/${subj}_task-rest_dir-${dir}_run-${run}
+        fileName="${fileName}, ${func}_${dir}_bold, ${func}_${dir}_sbref"
+        if [[ -f "${hcp}.nii.gz" ]]; then
+            files="${files}, 1"
+            echo cp "${hcp}.nii.gz" ${bids}_bold.nii.gz
+            json_func ${dir} ${bids}_bold.json
+        else
+            files="${files}, 0"
+        fi
+        if [[ -f "${hcp}_SBRef.nii.gz" ]]; then
+            files="${files}, 1"
+            echo cp "${hcp}_SBRef.nii.gz" ${bids}_sbref.nii.gz
+            json_func ${dir} ${bids}_sbref.json
+        else
+            files="${files}, 0"
+        fi
+    done
+  done
+
+  # dwi
+  for acq in dir95 dir96 dir97; do
+      for dir in LR RL; do
+        hcp="${hcp_dir}/Diffusion/${id}_3T_DWI_${acq}_${dir}"
+        bids=${bids_dir}/dwi/${subj}_acq-${acq}_dir-${dir}
+        fileName="${fileName}, DWI_${acq}_${dir}, DWI_${acq}_${dir}_sbref"
+        if [[ -f "${hcp}.nii.gz" ]]; then
+            files="${files}, 1"
+            echo cp "${hcp}.nii.gz" "${bids}_dwi.nii.gz"
+            echo cp "${hcp}.bval" "${bids}_dwi.bval"
+            echo cp "${hcp}.bvec" "${bids}_dwi.bvec"
+            json_dwi ${dir} ${bids}_dwi.json
+        else
+            files="${files}, 0"
+        fi
+        if [[ -f "${hcp}_SBRef.nii.gz" ]]; then
+            files="${files}, 1"
+            echo cp "${hcp}_SBRef.nii.gz" ${bids}_sbref.nii.gz
+            json_dwi ${dir} ${bids}_sbref.json
+        else
+            files="${files}, 0"
+        fi
+      done
+  done
+
+# close the main for each subject
+done
+
+# -----------------------------------------------------------------------------------------------#
+#			 Total Running Time
+lopuu=$(date +%s)
+eri=$(echo "$lopuu - $aloita" | bc)
+eri=$(echo print $eri/60 | perl)
+Title "TOTAL running time:\033[38;5;220m $(printf "%0.3f\n" ${eri}) minutes \033[38;5;141m"
