@@ -152,7 +152,7 @@ echo -e "{
 }" > ${out}/dataset_description.json
 
 # dataset files
-if [[ ! f ${out}/dataset_files.csv ]]; then
+if [[ ! -f ${out}/dataset_files.csv ]]; then
 echo "sub, T1w_MPR1, T1w_MPR2, T2w_SPC1, T2w_SPC2, rfMRI_REST1_LR_bold, rfMRI_REST1_LR_sbref, rfMRI_REST1_RL_bold, rfMRI_REST1_RL_sbref, rfMRI_REST2_LR_bold, rfMRI_REST2_LR_sbref, rfMRI_REST2_RL_bold, rfMRI_REST2_RL_sbref, DWI_dir95_LR, DWI_dir95_LR_sbref, DWI_dir95_RL, DWI_dir95_RL_sbref, DWI_dir96_LR, DWI_dir96_LR_sbref, DWI_dir96_RL, DWI_dir96_RL_sbref, DWI_dir97_LR, DWI_dir97_LR_sbref, DWI_dir97_RL, DWI_dir97_RL_sbref" > ${out}/dataset_files.csv
 fi
 
@@ -172,7 +172,6 @@ for id in ${subjects[@]}; do
 
   # check the files
   files="${id}"
-  fileName="sub"
 
   # T1w and T2w images images
   anats=(T1w_MPR1 T1w_MPR2 T2w_SPC1 T2w_SPC2)
@@ -181,10 +180,9 @@ for id in ${subjects[@]}; do
     img=${anat:0:3}
     tw="${hcp_dir}/${anat}/${id}_3T_${anat}.nii.gz"
     tw_bids=${bids_dir}/anat/${subj}_run-${run}_${img}
-    fileName="${fileName}, ${anat}"
     if [[ -f "${tw}" ]]; then
         files="${files}, 1"
-        cp $tw ${tw_bids}.nii.gz
+        cp -v $tw ${tw_bids}.nii.gz
         json_anat ${img} ${tw_bids}.json
     else
         files="${files}, 0"
@@ -197,17 +195,16 @@ for id in ${subjects[@]}; do
     for dir in LR RL; do
         hcp="${hcp_dir}/${func}_${dir}/${id}_3T_${func}_${dir}"
         bids=${bids_dir}/func/${subj}_task-rest_dir-${dir}_run-${run}
-        fileName="${fileName}, ${func}_${dir}_bold, ${func}_${dir}_sbref"
         if [[ -f "${hcp}.nii.gz" ]]; then
             files="${files}, 1"
-            cp "${hcp}.nii.gz" ${bids}_bold.nii.gz
+            cp -v "${hcp}.nii.gz" ${bids}_bold.nii.gz
             json_func ${dir} ${bids}_bold.json
         else
             files="${files}, 0"
         fi
         if [[ -f "${hcp}_SBRef.nii.gz" ]]; then
             files="${files}, 1"
-            cp "${hcp}_SBRef.nii.gz" ${bids}_sbref.nii.gz
+            cp -v "${hcp}_SBRef.nii.gz" ${bids}_sbref.nii.gz
             json_func ${dir} ${bids}_sbref.json
         else
             files="${files}, 0"
@@ -220,25 +217,27 @@ for id in ${subjects[@]}; do
       for dir in LR RL; do
         hcp="${hcp_dir}/Diffusion/${id}_3T_DWI_${acq}_${dir}"
         bids=${bids_dir}/dwi/${subj}_acq-${acq}_dir-${dir}
-        fileName="${fileName}, DWI_${acq}_${dir}, DWI_${acq}_${dir}_sbref"
         if [[ -f "${hcp}.nii.gz" ]]; then
             files="${files}, 1"
-            cp "${hcp}.nii.gz" "${bids}_dwi.nii.gz"
-            cp "${hcp}.bval" "${bids}_dwi.bval"
-            cp "${hcp}.bvec" "${bids}_dwi.bvec"
+            cp -v "${hcp}.nii.gz" "${bids}_dwi.nii.gz"
+            cp -v "${hcp}.bval" "${bids}_dwi.bval"
+            cp -v "${hcp}.bvec" "${bids}_dwi.bvec"
             json_dwi ${dir} ${bids}_dwi.json
         else
             files="${files}, 0"
         fi
         if [[ -f "${hcp}_SBRef.nii.gz" ]]; then
             files="${files}, 1"
-            cp "${hcp}_SBRef.nii.gz" ${bids}_sbref.nii.gz
+            cp -v "${hcp}_SBRef.nii.gz" ${bids}_sbref.nii.gz
             json_dwi ${dir} ${bids}_sbref.json
         else
             files="${files}, 0"
         fi
       done
   done
+
+# write the files existance on a row
+echo ${files} >> ${out}/dataset_files.csv
 
 # close the main for each subject
 done
