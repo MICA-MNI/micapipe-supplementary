@@ -74,6 +74,7 @@ in=$(realpath $in)
 # T1w and T2w
 function json_anat() {
   local img=$1
+  local outfile=$2
   if [[ ${img} == "T1w" ]]; then
       TR=2.4; TE=0.00214; seq="3D MPRAGE"; sesdes="T1w_MPR"; flip=8
   elif [[ ${img} == "T2w" ]]; then
@@ -89,12 +90,13 @@ function json_anat() {
     \"RepetitionTime\": ${TR},
     \"EchoTime\": ${TE},
     \"FlipAngle\": ${flip},
-  }"
+  }" > ${outfile}
 }
 
 # func json
 function json_func() {
-  dir=$1
+  local dir=$1
+  local outfile=$2
   TR=0.72; TE=0.0331; seq="Gradient-echo EPI"; sesdes="rfMRI_REST"; flip=52; multibandfactor=8; EchoSpacing=0.00058; TotalReadoutTime=0.08346
   if [ "${dir}" == 'LR' ]; then ped="i-"; else ped="i"; fi
   echo -e "{
@@ -112,12 +114,13 @@ function json_func() {
       \"MultibandAccelerationFactor\": ${multibandfactor},
       \"TotalReadoutTime\": ${TotalReadoutTime},
       \"TaskName\": \"rest\"
-  }"
+  }" > ${outfile}
 }
 
 # dwi json
 function json_dwi() {
-  dir=$1
+  local dir=$1
+  local outfile=$2
   TR=5.52; TE=0.0895; seq="Spin-echo EPI"; sesdes="DWI"; flip=78; multibandfactor=3; EchoSpacing=0.00078; TotalReadoutTime=0.60
   if [ "${dir}" == 'LR' ]; then ped="i-"; else ped="i"; fi
   echo -e "{
@@ -134,7 +137,7 @@ function json_dwi() {
     \"PhaseEncodingDirection\": \"${ped}\",
     \"MultibandAccelerationFactor\": ${multibandfactor},
     \"TotalReadoutTime\": ${TotalReadoutTime}
-  }"
+  }" > ${outfile}
 }
 
 # -----------------------------------------------------------------------------------------------#
@@ -149,7 +152,9 @@ echo -e "{
 }" > ${out}/dataset_description.json
 
 # dataset files
+if [[ ! f ${out}/dataset_files.csv ]]; then
 echo "sub, T1w_MPR1, T1w_MPR2, T2w_SPC1, T2w_SPC2, rfMRI_REST1_LR_bold, rfMRI_REST1_LR_sbref, rfMRI_REST1_RL_bold, rfMRI_REST1_RL_sbref, rfMRI_REST2_LR_bold, rfMRI_REST2_LR_sbref, rfMRI_REST2_RL_bold, rfMRI_REST2_RL_sbref, DWI_dir95_LR, DWI_dir95_LR_sbref, DWI_dir95_RL, DWI_dir95_RL_sbref, DWI_dir96_LR, DWI_dir96_LR_sbref, DWI_dir96_RL, DWI_dir96_RL_sbref, DWI_dir97_LR, DWI_dir97_LR_sbref, DWI_dir97_RL, DWI_dir97_RL_sbref" > ${out}/dataset_files.csv
+fi
 
 # Get subject ID's as list
 subjects=($(ls $in))
@@ -163,7 +168,7 @@ for id in ${subjects[@]}; do
   bids_dir=${out}/${subj}
 
   # create subjects directories
-  Do_cmd mkdir -p ${bids_dir}/{anat,func,dwi}
+  mkdir -p ${bids_dir}/{anat,func,dwi}
 
   # check the files
   files="${id}"
@@ -179,8 +184,8 @@ for id in ${subjects[@]}; do
     fileName="${fileName}, ${anat}"
     if [[ -f "${tw}" ]]; then
         files="${files}, 1"
-        Do_cmd cp $tw ${tw_bids}.nii.gz
-        Do_cmd json_anat ${img} ${tw_bids}.json
+        cp $tw ${tw_bids}.nii.gz
+        json_anat ${img} ${tw_bids}.json
     else
         files="${files}, 0"
     fi
@@ -195,15 +200,15 @@ for id in ${subjects[@]}; do
         fileName="${fileName}, ${func}_${dir}_bold, ${func}_${dir}_sbref"
         if [[ -f "${hcp}.nii.gz" ]]; then
             files="${files}, 1"
-            Do_cmd cp "${hcp}.nii.gz" ${bids}_bold.nii.gz
-            Do_cmd json_func ${dir} ${bids}_bold.json
+            cp "${hcp}.nii.gz" ${bids}_bold.nii.gz
+            json_func ${dir} ${bids}_bold.json
         else
             files="${files}, 0"
         fi
         if [[ -f "${hcp}_SBRef.nii.gz" ]]; then
             files="${files}, 1"
-            Do_cmd cp "${hcp}_SBRef.nii.gz" ${bids}_sbref.nii.gz
-            Do_cmd json_func ${dir} ${bids}_sbref.json
+            cp "${hcp}_SBRef.nii.gz" ${bids}_sbref.nii.gz
+            json_func ${dir} ${bids}_sbref.json
         else
             files="${files}, 0"
         fi
@@ -218,17 +223,17 @@ for id in ${subjects[@]}; do
         fileName="${fileName}, DWI_${acq}_${dir}, DWI_${acq}_${dir}_sbref"
         if [[ -f "${hcp}.nii.gz" ]]; then
             files="${files}, 1"
-            Do_cmd cp "${hcp}.nii.gz" "${bids}_dwi.nii.gz"
-            Do_cmd cp "${hcp}.bval" "${bids}_dwi.bval"
-            Do_cmd cp "${hcp}.bvec" "${bids}_dwi.bvec"
-            Do_cmd json_dwi ${dir} ${bids}_dwi.json
+            cp "${hcp}.nii.gz" "${bids}_dwi.nii.gz"
+            cp "${hcp}.bval" "${bids}_dwi.bval"
+            cp "${hcp}.bvec" "${bids}_dwi.bvec"
+            json_dwi ${dir} ${bids}_dwi.json
         else
             files="${files}, 0"
         fi
         if [[ -f "${hcp}_SBRef.nii.gz" ]]; then
             files="${files}, 1"
-            Do_cmd cp "${hcp}_SBRef.nii.gz" ${bids}_sbref.nii.gz
-            Do_cmd json_dwi ${dir} ${bids}_sbref.json
+            cp "${hcp}_SBRef.nii.gz" ${bids}_sbref.nii.gz
+            json_dwi ${dir} ${bids}_sbref.json
         else
             files="${files}, 0"
         fi
