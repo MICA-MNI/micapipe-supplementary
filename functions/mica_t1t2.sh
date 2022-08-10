@@ -71,10 +71,6 @@ do
     t2wStr=$2
     shift;shift
   ;;
-  -robust)
-    robust=TRUE
-    shift
-  ;;
   -threads)
     threads=$2
     shift;shift
