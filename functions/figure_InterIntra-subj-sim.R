@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------
-# Iter-Itra subject variability test
+# Inter-Intra subject variability test
 # 
 # ----------------------------------------------------------------------
 # Libraries
