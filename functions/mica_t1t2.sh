@@ -100,7 +100,7 @@ Error "One or more mandatory arguments are missing:
 help; exit 1; fi
 
 # Get the real path of the Inputs
-out=$(realpath $out)/micapipe
+out=$(realpath $out)/micapipe_v0.2.0
 BIDS=$(realpath $BIDS)
 id=${id/sub-/}
 
@@ -117,7 +117,7 @@ bids_variables $BIDS $id $out $SES
 if [ ! -d ${subject_bids} ]; then Error "$id was not found on the BIDS directory\n\t     ${subject_bids}"; exit 0; fi
 
 # Check inputs: Nativepro T1
-T1nativepro="${proc_struct}/${idBIDS}"_space-nativepro_t1w.nii.gz
+T1nativepro="${proc_struct}/${idBIDS}"_space-nativepro_T1w.nii.gz
 if [ ! -f "${T1nativepro}" ]; then Error "Subject $id doesn't have T1_nativepro: ${T1nativepro}"; exit; fi
 
 # T1w image to process (DEFAULT is *T2w.nii*)
@@ -166,6 +166,12 @@ Info "Output directory: $out"
 t1wt2w="${proc_struct}/${idBIDS}_space-nativepro_t1wt2w.nii.gz"
 t2w_tmp="${tmp}/${idBIDS}_space-nativepro_t2w.nii.gz"
 t2w_res="${tmp}/${idBIDS}_space-nativepro_t2w_rescaled.nii.gz"
+t2w_clamp="${tmp}/${idBIDS}_space-nativepro_t2w_clamped.nii.gz"
+t2w_preproc="${tmp}/${idBIDS}_space-nativepro_t2w_preproc.nii.gz"
+
+t1_clamp="${tmp}/${idBIDS}_space-nativepro_t1_clamped.nii.gz"
+t1_res="${tmp}/${idBIDS}_space-nativepro_t1_rescaled.nii.gz"
+t1_preproc="${tmp}/${idBIDS}_space-nativepro_t1_preproc.nii.gz"
 
 # -----------------------------------------------------------------------------------------------
 Info "Affine registration between T2 and T1_nativepro"
@@ -179,15 +185,39 @@ if [ ! -f ${T2w_2_natT1w_mat} ]; then Error "Affine registration failed"; cd $he
 Do_cmd antsApplyTransforms -d 3 -u int -i ${bids_T2ws[0]} -r $T1nativepro -n NearestNeighbor \
         -t $T2w_2_natT1w_mat -o $t2w_tmp
 
-Info "Generate the T1w over the T2 weighted image"
+Info "Preparation od the T1w and the T2 weighted image"
+
+# Get gm/wm interface mask
+t1_gmwmi="${tmp}/${idBIDS}_space-nativepro_desc-gmwmi-mask.nii.gz"
+t1_5tt="${proc_struct}/${idBIDS}_space-nativepro_T1w_5tt.nii.gz"
+t1_gmwmi_thr="${tmp}/${idBIDS}_space-nativepro_desc-gmwmi-mask_thr0p5.nii.gz"
+Do_cmd 5tt2gmwmi "$t1_5tt" "$t1_gmwmi"
+
+# Get gm/wm interface mask thresholded
+fslmaths "$t1_gmwmi" -thr 0.5 -bin "$t1_gmwmi_thr"
+
 # Intensity Non-uniform correction - N4
-Do_cmd N4BiasFieldCorrection  -d 3 -i "$t2w_tmp" -r -o "$t2w_tmp" -v
+Do_cmd N4BiasFieldCorrection -d 3 -i "$t2w_tmp" -r -o "$t2w_tmp" -v
+
+# Clamp intensities
+Do_cmd ImageMath 3 "$t2w_clamp" TruncateImageIntensity "$t2w_tmp" 0.01 0.99 75
+Do_cmd ImageMath 3 "$t1_clamp" TruncateImageIntensity "$T1nativepro" 0.01 0.99 75
 
 # Rescale intensity [100,0]
-Do_cmd ImageMath 3 "$t2w_res" RescaleImage "$t2w_tmp" 0 100
+Do_cmd ImageMath 3 "$t2w_res" RescaleImage "$t2w_clamp" 0 100
+Do_cmd ImageMath 3 "$t1_res" RescaleImage "$t1_clamp" 0 100
 
+# Normalize flair with compute mean flair intensity in non-zero voxels
+gmwmi_t2w=$(fslstats "$t2w_res" -M -k "$t1_gmwmi_thr")
+fslmaths "$t2w_res" -div $gmwmi_t2w "$t2w_preproc"
+
+# Normalize T1w
+gmwmi_t1=$(fslstats "$t1_res" -M -k "$t1_gmwmi_thr")
+fslmaths "$t1_res" -div $gmwmi_t1 "$t1_preproc"
+
+Info "Generate the T1w over the T2 weighted image"
 # Generate the T1/T2w
-Do_cmd ImageMath 3 "$t1wt2w" / "$T1nativepro" "$t2w_res"
+Do_cmd ImageMath 3 "$t1wt2w" / "$t1_preproc" "$t2w_preproc"
 
 # -----------------------------------------------------------------------------------------------
 # Clean temporal directory
