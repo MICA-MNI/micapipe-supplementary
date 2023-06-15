@@ -26,9 +26,10 @@ https://github.com/MICA-MNI
 http://mica-mni.github.io/
 "
 }
-
-# source print funtions for MICAPIPE
-source "${MICAPIPE}/functions/utilities.sh"
+Error() {
+echo -e "\033[38;5;9m\n-------------------------------------------------------------\n\n[ ERROR ]..... $1\n
+-------------------------------------------------------------\033[0m\n"
+}
 
 # -----------------------------------------------------------------------------------------------#
 #			ARGUMENTS
